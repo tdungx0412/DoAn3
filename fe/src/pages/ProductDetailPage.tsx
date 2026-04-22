@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { productService } from '../services/productService';
 import { Product } from '../types';
 import { formatPrice } from '../config';
+import { useCart } from '../contexts/CartContext';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (id) {
@@ -55,10 +57,16 @@ const ProductDetailPage: React.FC = () => {
     ? product.original_price - (product.original_price * (product.discount_percent || 0) / 100)
     : product.price;
 
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity);
+      alert(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
+    }
+  };
+
   return (
     <div className="product-detail-page">
       <div className="container">
-        {/* Breadcrumb */}
         <div className="breadcrumb">
           <Link to="/">Trang chủ</Link> / 
           <Link to="/products"> Sản phẩm</Link> / 
@@ -66,7 +74,6 @@ const ProductDetailPage: React.FC = () => {
         </div>
 
         <div className="product-detail">
-          {/* Hình ảnh */}
           <div className="product-images">
             <img 
               src={product.main_image || 'https://via.placeholder.com/500x500?text=No+Image'} 
@@ -75,7 +82,6 @@ const ProductDetailPage: React.FC = () => {
             />
           </div>
 
-          {/* Thông tin */}
           <div className="product-info-detail">
             <h1>{product.name}</h1>
             
@@ -101,7 +107,6 @@ const ProductDetailPage: React.FC = () => {
               <p>{product.short_description || product.description}</p>
             </div>
 
-            {/* Thông số kỹ thuật */}
             <div className="product-specs-detail">
               <h3>Thông số kỹ thuật</h3>
               <table className="specs-table">
@@ -152,7 +157,6 @@ const ProductDetailPage: React.FC = () => {
               </table>
             </div>
 
-            {/* Actions */}
             <div className="product-actions-detail">
               <div className="quantity-selector">
                 <label>Số lượng:</label>
@@ -181,7 +185,7 @@ const ProductDetailPage: React.FC = () => {
               </div>
 
               <div className="action-buttons">
-                <button className="btn btn-primary btn-lg">
+                <button onClick={handleAddToCart} className="btn btn-primary btn-lg">
                   🛒 Thêm vào giỏ hàng
                 </button>
                 <button className="btn btn-outline btn-lg">

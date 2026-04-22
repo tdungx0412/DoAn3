@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/'); // Đăng nhập thành công chuyển về trang chủ
+      navigate('/'); 
       window.location.reload();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Kiểm tra lại email/password.');

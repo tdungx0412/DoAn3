@@ -5,12 +5,15 @@ import pool from './config/database'; // Import pool đã await
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 
+import orderRoutes from './routes/orderRoutes';
+
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/orders', orderRoutes);
 // Routes
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: '🔌 da3chdl API is running', version: '1.0.0' });
@@ -28,5 +31,7 @@ pool.then(() => {
   console.error('❌ Failed to connect to database:', err);
   process.exit(1); // Dừng server nếu không có DB
 });
+
+
 
 export default app;
