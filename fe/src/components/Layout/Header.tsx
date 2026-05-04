@@ -13,22 +13,44 @@ const Header: React.FC = () => {
     navigate('/');
   };
 
+  // Kiểm tra xem user có phải admin không (role_id = 1)
+  const isAdmin = user?.role_id === 1;
+
   return (
     <header className="header">
       <div className="container">
         <div className="header-top">
-          <Link to="/" className="logo"><h1>🔌 Điện Lạnh Store</h1></Link>
+          <Link to="/" className="logo">
+            <h1>🔌 Điện Lạnh Store</h1>
+          </Link>
+          
           <div className="header-actions">
-            <Link to="/cart" className="cart-link">
-              🛒 Giỏ hàng
-              {getTotalItems() > 0 && (
-                <span className="cart-count">{getTotalItems()}</span>
-              )}
-            </Link>
+            {/* Giỏ hàng - Chỉ hiện với user thường */}
+            {!isAdmin && (
+              <Link to="/cart" className="cart-link">
+                🛒 Giỏ hàng
+                {getTotalItems() > 0 && (
+                  <span className="cart-count">{getTotalItems()}</span>
+                )}
+              </Link>
+            )}
+
+            {/* User Menu */}
             {isAuthenticated ? (
               <div className="user-menu">
-                <span>👤 {user?.full_name || user?.username}</span>
-                <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
+                {isAdmin ? (
+                  <>
+                    <span className="admin-badge">👨‍💼 Admin</span>
+                    <span>{user?.full_name || user?.username}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>👤 {user?.full_name || user?.username}</span>
+                  </>
+                )}
+                <button onClick={handleLogout} className="logout-btn">
+                  Đăng xuất
+                </button>
               </div>
             ) : (
               <div className="auth-links">
@@ -38,13 +60,34 @@ const Header: React.FC = () => {
             )}
           </div>
         </div>
-        <nav className="main-nav">
-          <Link to="/">Trang chủ</Link>
-          <Link to="/products">Sản phẩm</Link>
-          <Link to="/products?category_id=1">Tủ lạnh</Link>
-          <Link to="/products?category_id=2">Máy lạnh</Link>
-          <Link to="/products?category_id=3">Máy giặt</Link>
-        </nav>
+
+        {/* Navigation Menu - Phân biệt Admin và User */}
+        {isAdmin ? (
+          // 🛠️ ADMIN MENU
+          <nav className="admin-nav">
+            <Link to="/admin" className="admin-nav-item active">
+              ️ Dashboard
+            </Link>
+            <Link to="/admin?tab=products" className="admin-nav-item">
+              📦 Sản phẩm
+            </Link>
+            <Link to="/admin?tab=orders" className="admin-nav-item">
+              📋 Đơn hàng
+            </Link>
+            <Link to="/" className="admin-nav-item">
+              🏠 Xem trang chủ
+            </Link>
+          </nav>
+        ) : (
+          // 🛍️ PUBLIC MENU (Cho khách hàng)
+          <nav className="main-nav">
+            <Link to="/">Trang chủ</Link>
+            <Link to="/products">Sản phẩm</Link>
+            <Link to="/products?category_id=1">Tủ lạnh</Link>
+            <Link to="/products?category_id=2">Máy lạnh</Link>
+            <Link to="/products?category_id=3">Máy giặt</Link>
+          </nav>
+        )}
       </div>
     </header>
   );

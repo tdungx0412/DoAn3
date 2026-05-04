@@ -168,20 +168,42 @@ export const updateProduct = async (req: Request, res: Response) => {
     const productData = req.body;
     const conn = await pool;
 
+    // Cập nhật đầy đủ các trường quan trọng
     await conn.request()
       .input('id', sql.Int, parseInt(id))
       .input('name', sql.NVarChar, productData.name)
+      .input('slug', sql.NVarChar, productData.slug)
+      .input('short_description', sql.NVarChar, productData.short_description)
       .input('price', sql.Decimal(15, 2), productData.price)
+      .input('original_price', sql.Decimal(15, 2), productData.original_price)
+      .input('discount_percent', sql.Int, productData.discount_percent)
+      .input('category_id', sql.Int, productData.category_id)
+      .input('brand_id', sql.Int, productData.brand_id)
+      .input('sku', sql.NVarChar, productData.sku)
       .input('stock_quantity', sql.Int, productData.stock_quantity)
+      .input('main_image', sql.NVarChar, productData.main_image)
       .input('is_featured', sql.Bit, productData.is_featured)
       .query(`
         UPDATE products 
-        SET name = @name, price = @price, stock_quantity = @stock_quantity, is_featured = @is_featured, updated_at = GETDATE()
+        SET name = @name,
+            slug = @slug,
+            short_description = @short_description,
+            price = @price,
+            original_price = @original_price,
+            discount_percent = @discount_percent,
+            category_id = @category_id,
+            brand_id = @brand_id,
+            sku = @sku,
+            stock_quantity = @stock_quantity,
+            main_image = @main_image,
+            is_featured = @is_featured,
+            updated_at = GETDATE()
         WHERE id = @id
       `);
 
     res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
   } catch (error: any) {
+    console.error('❌ Update product error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

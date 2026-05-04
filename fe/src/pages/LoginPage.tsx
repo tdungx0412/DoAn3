@@ -23,19 +23,18 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      // 1. Gọi API đăng nhập
       await login(formData.email, formData.password);
       
-      // 2. Lấy thông tin user vừa đăng nhập (từ localStorage hoặc context)
+      //Lấy thông tin user vừa đăng nhập 
       const userStr = localStorage.getItem('user');
       const currentUser = userStr ? JSON.parse(userStr) : null;
 
-      // 3. Phân quyền điều hướng
+      //Phân quyền điều hướng
       if (currentUser?.role_id === 1) {
-        // ✅ Nếu là Admin (role_id = 1) → Vào trang Admin
+        // 
         navigate('/admin');
       } else {
-        // ✅ Nếu là Khách hàng → Về trang chủ
+        // 
         navigate('/');
       }
       
