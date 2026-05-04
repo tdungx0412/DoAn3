@@ -5,8 +5,18 @@ import { useAuth } from '../contexts/AuthContext';
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, loading } = useAuth();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  
   const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,10 +24,11 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/'); 
+      navigate('/');
       window.location.reload();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Kiểm tra lại email/password.');
+      const message = err.response?.data?.message || 'Đăng nhập thất bại';
+      setError(message);
     }
   };
 
@@ -26,30 +37,33 @@ const LoginPage: React.FC = () => {
       <div className="container">
         <div className="auth-form">
           <h2>Đăng nhập</h2>
-          {error && <div className="alert alert-error">{error}</div>}
           
+          {error && <div className="alert alert-error">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Email</label>
-              <input
-                type="email"
-                className="form-control"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                placeholder="admin@da3chdl.com"
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                required 
+                className="form-control" 
+                placeholder="email@example.com"
               />
             </div>
 
             <div className="form-group">
               <label>Mật khẩu</label>
-              <input
-                type="password"
-                className="form-control"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                placeholder="123456"
+              <input 
+                type="password" 
+                name="password" 
+                value={formData.password} 
+                onChange={handleChange} 
+                required 
+                className="form-control" 
+                placeholder="••••••"
               />
             </div>
 

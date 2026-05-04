@@ -9,10 +9,20 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ success: false, message: 'Access token required' });
+  if (!token) {
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Access token required' 
+    });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'secret', (err: any, user: any) => {
-    if (err) return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production', (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Invalid or expired token' 
+      });
+    }
     req.user = user;
     next();
   });
@@ -21,7 +31,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 export const authorizeRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ success: false, message: 'Insufficient permissions' });
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Insufficient permissions' 
+      });
     }
     next();
   };
