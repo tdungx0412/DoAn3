@@ -100,3 +100,41 @@ export const createOrder = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message || 'Lỗi server khi tạo đơn hàng' });
   }
 };
+
+
+
+
+// cho quản lý
+export const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const conn = await pool;
+    const result = await conn.request().query(`
+      SELECT o.id, o.order_number, o.user_id, u.full_name as user_name, o.recipient_name, o.recipient_phone, 
+             o.shipping_address, o.total_amount, o.status, o.payment_status, o.created_at,
+             (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as item_count
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      ORDER BY o.created_at DESC
+    `);
+    res.json({ success: true, data: result.recordset });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const conn = await pool;
+
+    await conn.request()
+      .input('id', sql.Int, parseInt(id))
+      .input('status', sql.NVarChar, status)
+      .query('UPDATE orders SET status = @status, updated_at = GETDATE() WHERE id = @id');
+
+    res.json({ success: true, message: 'Cập nhật trạng thái đơn hàng thành công' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

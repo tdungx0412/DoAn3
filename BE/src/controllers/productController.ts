@@ -123,3 +123,80 @@ export const getProductById = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+
+
+// cho quản lý
+export const createProduct = async (req: Request, res: Response) => {
+  try {
+    const productData = req.body;
+    const conn = await pool;
+    
+    const result = await conn.request()
+      .input('name', sql.NVarChar, productData.name)
+      .input('slug', sql.NVarChar, productData.slug)
+      .input('short_description', sql.NVarChar, productData.short_description)
+      .input('price', sql.Decimal(15, 2), productData.price)
+      .input('original_price', sql.Decimal(15, 2), productData.original_price)
+      .input('discount_percent', sql.Int, productData.discount_percent)
+      .input('category_id', sql.Int, productData.category_id)
+      .input('brand_id', sql.Int, productData.brand_id)
+      .input('sku', sql.NVarChar, productData.sku)
+      .input('stock_quantity', sql.Int, productData.stock_quantity)
+      .input('main_image', sql.NVarChar, productData.main_image)
+      .input('is_featured', sql.Bit, productData.is_featured)
+      .query(`
+        INSERT INTO products (name, slug, short_description, price, original_price, discount_percent, 
+                              category_id, brand_id, sku, stock_quantity, main_image, is_featured)
+        OUTPUT INSERTED.*
+        VALUES (@name, @slug, @short_description, @price, @original_price, @discount_percent,
+                @category_id, @brand_id, @sku, @stock_quantity, @main_image, @is_featured)
+      `);
+
+    res.status(201).json({ success: true, data: result.recordset[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const productData = req.body;
+    const conn = await pool;
+
+    await conn.request()
+      .input('id', sql.Int, parseInt(id))
+      .input('name', sql.NVarChar, productData.name)
+      .input('price', sql.Decimal(15, 2), productData.price)
+      .input('stock_quantity', sql.Int, productData.stock_quantity)
+      .input('is_featured', sql.Bit, productData.is_featured)
+      .query(`
+        UPDATE products 
+        SET name = @name, price = @price, stock_quantity = @stock_quantity, is_featured = @is_featured, updated_at = GETDATE()
+        WHERE id = @id
+      `);
+
+    res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const conn = await pool;
+    
+    await conn.request()
+      .input('id', sql.Int, parseInt(id))
+      .query('DELETE FROM products WHERE id = @id');
+
+    res.json({ success: true, message: 'Xóa sản phẩm thành công' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

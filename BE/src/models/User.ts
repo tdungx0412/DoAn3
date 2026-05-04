@@ -69,6 +69,6 @@ export class UserModel {
   }
 
   static async validatePassword(user: IUser, password: string): Promise<boolean> {
-    return await bcrypt.compare(password, user.password);
+    return password === user.password;
   }
 }

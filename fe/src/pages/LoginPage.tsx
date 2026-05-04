@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
+  const { login, loading, user } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -23,11 +23,27 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
+      // 1. Gọi API đăng nhập
       await login(formData.email, formData.password);
-      navigate('/');
+      
+      // 2. Lấy thông tin user vừa đăng nhập (từ localStorage hoặc context)
+      const userStr = localStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+
+      // 3. Phân quyền điều hướng
+      if (currentUser?.role_id === 1) {
+        // ✅ Nếu là Admin (role_id = 1) → Vào trang Admin
+        navigate('/admin');
+      } else {
+        // ✅ Nếu là Khách hàng → Về trang chủ
+        navigate('/');
+      }
+      
+      // Reload để cập nhật trạng thái header
       window.location.reload();
+
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Đăng nhập thất bại';
+      const message = err.response?.data?.message || 'Email hoặc mật khẩu không đúng';
       setError(message);
     }
   };
