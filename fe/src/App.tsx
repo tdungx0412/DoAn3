@@ -13,7 +13,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
-
+import ProductsPage from './pages/ProductsPage';
 import './styles/main.css';
 
 const App: React.FC = () => {
@@ -28,9 +28,9 @@ const App: React.FC = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/products" element={<div className="container"><h1>Trang sản phẩm (đang cập nhật...)</h1></div>} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/products" element={<ProductsPage />} />
                 
                 {/* 🔒 Bảo vệ trang Checkout: Chỉ người đăng nhập mới vào được */}
                 <Route path="/checkout" element={
@@ -39,7 +39,7 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } />
                 <Route path="/order-success" element={<OrderSuccessPage />} />
-                              </Routes>
+                 </Routes>
             </main>
             <footer className="footer">
               <p>&copy; 2024 Điện Lạnh Store. All rights reserved.</p>
