@@ -1,25 +1,21 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: 'http://localhost:3000/api', // Đổi port nếu khác
   timeout: 10000,
+  headers: { 'Content-Type': 'application/json' }
 });
 
-// Gắn Token vào mọi request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// ✅ Tự động gắn token vào mọi request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// Xử lý lỗi response (VD: Token hết hạn)
+// Xử lý lỗi 401 (token hết hạn) → tự động đăng xuất
 api.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -104,7 +104,7 @@ const ProductsPage: React.FC = () => {
             </div>
 
             <div className="filter-section">
-              <h3>📂 Danh mục</h3>
+              <h3>Danh mục</h3>
               <div className="category-list">
                 <label className={`category-item ${!category_id ? 'active' : ''}`}>
                   <input

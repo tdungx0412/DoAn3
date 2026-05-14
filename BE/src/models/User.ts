@@ -1,6 +1,5 @@
 import sql from 'mssql';
-import bcrypt from 'bcrypt';
-import pool from '../config/database';
+import { getPool } from '../config/database';
 
 export interface IUser {
   id?: number;
@@ -10,64 +9,48 @@ export interface IUser {
   full_name?: string;
   phone?: string;
   role_id?: number;
-  status?: string;
-  created_at?: Date;
 }
 
-export class UserModel {
-  static async findByEmail(email: string): Promise<IUser | null> {
-    try {
-      const conn = await pool;
-      const result = await conn.request()
-        .input('email', sql.NVarChar, email)
-        .query('SELECT * FROM users WHERE email = @email');
-      return result.recordset[0] || null;
-    } catch (error) {
-      console.error('Find by email error:', error);
-      throw error;
-    }
+export class User {
+  // Tìm user theo email
+  static async findByEmail(email: string): Promise<IUser | undefined> {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('email', sql.NVarChar, email)
+      .query('SELECT * FROM users WHERE email = @email');
+    return result.recordset[0];
   }
 
-  static async findById(id: number): Promise<IUser | null> {
-    try {
-      const conn = await pool;
-      const result = await conn.request()
-        .input('id', sql.Int, id)
-        .query('SELECT id, username, email, full_name, phone, role_id, status, created_at FROM users WHERE id = @id');
-      return result.recordset[0] || null;
-    } catch (error) {
-      console.error('Find by id error:', error);
-      throw error;
-    }
+  // Tìm user theo ID
+  static async findById(id: number): Promise<IUser | undefined> {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('id', sql.Int, id)
+      .query('SELECT * FROM users WHERE id = @id');
+    return result.recordset[0];
   }
 
-  static async create(user: IUser): Promise<IUser> {
-    try {
-      const conn = await pool;
-      
-      // Hash password
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      
-      const result = await conn.request()
-        .input('username', sql.NVarChar, user.username)
-        .input('email', sql.NVarChar, user.email)
-        .input('password', sql.NVarChar, hashedPassword)
-        .input('full_name', sql.NVarChar, user.full_name || null)
-        .input('phone', sql.NVarChar, user.phone || null)
-        .input('role_id', sql.Int, user.role_id || 2)
-        .query(`
-          INSERT INTO users (username, email, password, full_name, phone, role_id, status)
-          OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.full_name, INSERTED.phone, INSERTED.role_id, INSERTED.status, INSERTED.created_at
-          VALUES (@username, @email, @password, @full_name, @phone, @role_id, 'active')
-        `);
-      
-      return result.recordset[0];
-    } catch (error) {
-      console.error('Create user error:', error);
-      throw error;
-    }
+  // Tạo user mới (lưu mật khẩu thường)
+  static async create(userData: Partial<IUser> & { password: string }): Promise<IUser> {
+    const pool = await getPool();
+    
+    const result = await pool.request()
+      .input('username', sql.NVarChar, userData.username)
+      .input('email', sql.NVarChar, userData.email)
+      .input('password', sql.NVarChar, userData.password) // Lưu thẳng mật khẩu thường
+      .input('full_name', sql.NVarChar, userData.full_name || '')
+      .input('phone', sql.NVarChar, userData.phone || '')
+      .input('role_id', sql.Int, userData.role_id || 2)
+      .query(`
+        INSERT INTO users (username, email, password, full_name, phone, role_id)
+        OUTPUT INSERTED.*
+        VALUES (@username, @email, @password, @full_name, @phone, @role_id)
+      `);
+
+    return result.recordset[0];
   }
 
+  // ✅ Kiểm tra mật khẩu: SO SÁNH TRỰC TIẾP (Không dùng bcrypt)
   static async validatePassword(user: IUser, password: string): Promise<boolean> {
     return password === user.password;
   }

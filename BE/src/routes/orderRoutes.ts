@@ -1,15 +1,16 @@
 import { Router } from 'express';
+import { authMiddleware } from '../middleware/authMiddleware'; // Middleware kiểm tra đăng nhập
 import { createOrder, getAllOrders, updateOrderStatus } from '../controllers/orderController';
-import { authenticateToken, authorizeRole } from '../middleware/auth';
 
 const router = Router();
 
-router.use(authenticateToken);
+// POST: Tạo đơn hàng (Khách hàng dùng)
+router.post('/', authMiddleware, createOrder);
 
-router.post('/', createOrder);
-router.get('/my-orders', getAllOrders); 
-// Admin routes
-router.get('/admin', authorizeRole('admin'), getAllOrders); 
-router.put('/:id/status', authorizeRole('admin'), updateOrderStatus);
+// GET: Lấy danh sách đơn hàng (Admin dùng)
+router.get('/', authMiddleware, getAllOrders);
+
+// PATCH: Cập nhật trạng thái (Admin dùng)
+router.patch('/:id/status', authMiddleware, updateOrderStatus);
 
 export default router;

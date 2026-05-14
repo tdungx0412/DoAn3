@@ -1,60 +1,48 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
+// ✅ BẮT BUỘC: Load .env TRƯỚC TIÊN, trước khi import bất kỳ file nào khác
 import dotenv from 'dotenv';
+dotenv.config({ path: './.env' });
 
-import pool from './config/database';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { connectDB } from './config/database';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
+import categoryRoutes from './routes/categoryRoutes';
+import brandRoutes from './routes/brandRoutes';
 
-dotenv.config();
+// Debug: Kiểm tra .env đã load chưa
+console.log('📦 ENV LOADED:', {
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD ? '***' + process.env.DB_PASSWORD.slice(-3) : 'UNDEFINED ❌',
+  DB_SERVER: process.env.DB_SERVER
+});
 
-const app: Application = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',  
-    'http://localhost:3002',
-    'http://localhost:5173', 
-    '*' 
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Routes
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: '🔌 da3chdl API is running', version: '1.0.0' });
-});
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/brands', brandRoutes);
 
-// Global Error Handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('❌ Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error'
-  });
-});
+app.get('/api', (req, res) => res.json({ message: 'API is running...' }));
 
-// Start Server
-pool.then(() => {
-  console.log('✅ Connected to SQL Server');
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-  });
-}).catch((err) => {
-  console.error('❌ Database connection failed:', err);
-  process.exit(1);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  } catch (error) {
+    console.error('❌ Failed to start:', error);
+    process.exit(1);
+  }
+};
 
-export default app;
+startServer();

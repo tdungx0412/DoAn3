@@ -21,7 +21,7 @@ const Header: React.FC = () => {
       <div className="container">
         <div className="header-top">
           <Link to="/" className="logo">
-            <h1>🔌 Điện Lạnh Store</h1>
+            <h1>Điện Lạnh Store</h1>
           </Link>
           
           <div className="header-actions">
